@@ -30,7 +30,7 @@ jobs:
         uses: DevChall-by-SDCY-and-VXM/debian-buildpackage-template@main
         with:
           distro: debian:unstable-slim
-          arch: amd64 i386
+          arch: arm64 riscv64
           docker_arch_specific: true
 
       - name: Extract artifact
