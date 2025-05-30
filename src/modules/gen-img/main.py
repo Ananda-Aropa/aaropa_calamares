@@ -55,11 +55,14 @@ def run():
             _('rootMountPoint is "{}", which does not exist.'.format(root_mount_point)),
         )
 
+    data_img = libcalamares.globalstorage.value("dataimg")
+
     libcalamares.utils.host_env_process_output(
         [
             "/usr/share/calamares/scripts/gen-img",
             root_mount_point,
-            "DATA=data.img" in str(libcalamares.globalstorage.value("options")),
+            not not data_img,
+            [data_img["dataSize"], 0][(not not data_img["useMaximum"])] if data_img else "",
         ],
         None,
     )

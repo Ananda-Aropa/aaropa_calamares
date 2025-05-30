@@ -10,6 +10,7 @@ _modules="
 	bootcfg
 	boot-postcfg
 	bootloader
+	dataimg
 	finished
 	fsresizer
 	gen-fstab

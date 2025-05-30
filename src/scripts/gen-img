@@ -5,10 +5,17 @@ dd if=/dev/zero of="$1/misc.img" bs=1 count=0 seek=10M
 mkdir -p "$1"/{data,boot}
 
 if [ "$2" = "True" ] || ! mkdir "$1"/DATA; then
-  rm -rf "$1"/data
-  dd if=/dev/zero of="$1"/data.img bs=1 count=0 \
-    seek=$(($(busybox df -m "$1" | awk '{print $4}' | tail -1) - 4096))M
-  mkfs.ext4 -L "userdata" "$1"/data.img
+	rm -rf "$1"/data
+
+	size=$3
+	if [ "$size" = 0 ]; then
+		size=$(($(busybox df -m "$1" | awk '{print $4}' | tail -1) - 4096))
+	fi
+
+	dd if=/dev/zero of="$1"/data.img bs=1 count=0 \
+		seek=${size}M
+
+	mkfs.ext4 -L "userdata" "$1"/data.img
 fi
 
 rm -rf "$1"/DATA
