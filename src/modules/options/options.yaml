@@ -70,8 +70,6 @@
           description: "SDCARDFS_DISABLE=1"
         - name: "Mount all internal partitions"
           description: "INTERNAL_MOUNT=1"
-        - name: "Use disk image data"
-          description: "DATA=data.img"
 
 - name: "Networking"
   options:

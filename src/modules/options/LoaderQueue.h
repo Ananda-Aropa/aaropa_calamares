@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef NETINSTALL_LOADERQUEUE_H
-#define NETINSTALL_LOADERQUEUE_H
+#ifndef OPTIONS_LOADERQUEUE_H
+#define OPTIONS_LOADERQUEUE_H
 
 #include <QQueue>
 #include <QUrl>

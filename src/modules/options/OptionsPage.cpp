@@ -29,7 +29,7 @@
 OptionsPage::OptionsPage( Config* c, QWidget* parent )
     : QWidget( parent )
     , m_config( c )
-    , ui( new Ui::Page_NetInst )
+    , ui( new Ui::Page_Options )
 {
     ui->setupUi( this );
     ui->groupswidget->header()->setSectionResizeMode( QHeaderView::ResizeToContents );
@@ -41,6 +41,13 @@ OptionsPage::OptionsPage( Config* c, QWidget* parent )
              {
                  ui->label->setVisible( !title.isEmpty() );
                  ui->label->setText( title );
+             } );
+    connect( c,
+             &Config::subtitleLabelChanged,
+             [ ui = this->ui ]( const QString subtitle )
+             {
+                 ui->warn->setVisible( !subtitle.isEmpty() );
+                 ui->warn->setText( subtitle );
              } );
     connect( c, &Config::statusReady, this, &OptionsPage::expandGroups );
 }

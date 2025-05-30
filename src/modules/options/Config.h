@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef NETINSTALL_CONFIG_H
-#define NETINSTALL_CONFIG_H
+#ifndef OPTIONS_CONFIG_H
+#define OPTIONS_CONFIG_H
 
 #include "OptionModel.h"
 
@@ -34,6 +34,7 @@ class Config : public QObject
     // Translations, of the module name (for sidebar) and above the list
     Q_PROPERTY( QString sidebarLabel READ sidebarLabel NOTIFY sidebarLabelChanged FINAL )
     Q_PROPERTY( QString titleLabel READ titleLabel NOTIFY titleLabelChanged FINAL )
+    Q_PROPERTY( QString subtitleLabel READ subtitleLabel NOTIFY subtitleLabelChanged FINAL )
 
 public:
     Config( QObject* parent = nullptr );
@@ -64,6 +65,7 @@ public:
 
     QString sidebarLabel() const;
     QString titleLabel() const;
+    QString subtitleLabel() const;
 
     /** @brief Fill model from parsed data.
      *
@@ -83,6 +85,7 @@ Q_SIGNALS:
     void statusChanged( QString status );  ///< Something changed
     void sidebarLabelChanged( QString label );
     void titleLabelChanged( QString label );
+    void subtitleLabelChanged( QString label );
     void statusReady();  ///< Loading groups is complete
 
 private Q_SLOTS:
@@ -92,6 +95,7 @@ private Q_SLOTS:
 private:
     Calamares::Locale::TranslatedString* m_sidebarLabel = nullptr;  // As it appears in the sidebar
     Calamares::Locale::TranslatedString* m_titleLabel = nullptr;
+    Calamares::Locale::TranslatedString* m_subtitleLabel = nullptr;
     OptionModel* m_model = nullptr;
     LoaderQueue* m_queue = nullptr;
     Status m_status = Status::Ok;

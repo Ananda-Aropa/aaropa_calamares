@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef NETINSTALLVIEWSTEP_H
-#define NETINSTALLVIEWSTEP_H
+#ifndef OPTIONSVIEWSTEP_H
+#define OPTIONSVIEWSTEP_H
 
 #include "Config.h"
 
@@ -63,4 +63,4 @@ private:
 
 CALAMARES_PLUGIN_FACTORY_DECLARATION( OptionsViewStepFactory )
 
-#endif  // NETINSTALLVIEWSTEP_H
+#endif  // OPTIONSVIEWSTEP_H

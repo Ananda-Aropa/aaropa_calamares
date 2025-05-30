@@ -39,6 +39,7 @@ Config::retranslate()
     emit statusChanged( status() );
     emit sidebarLabelChanged( sidebarLabel() );
     emit titleLabelChanged( titleLabel() );
+    emit subtitleLabelChanged( subtitleLabel() );
 }
 
 QString
@@ -79,6 +80,12 @@ QString
 Config::titleLabel() const
 {
     return m_titleLabel ? m_titleLabel->get() : QString();
+}
+
+QString
+Config::subtitleLabel() const
+{
+    return m_subtitleLabel ? m_subtitleLabel->get() : QString();
 }
 
 void
@@ -127,6 +134,10 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
     if ( label.contains( "title" ) )
     {
         m_titleLabel = new Calamares::Locale::TranslatedString( label, "title", className );
+    }
+    if ( label.contains( "subtitle" ) )
+    {
+        m_subtitleLabel = new Calamares::Locale::TranslatedString( label, "subtitle", className );
     }
 
     // Lastly, load the groups data

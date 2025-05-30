@@ -10,8 +10,8 @@
  *
  */
 
-#ifndef NETINSTALLPAGE_H
-#define NETINSTALLPAGE_H
+#ifndef OPTIONSPAGE_H
+#define OPTIONSPAGE_H
 
 #include "Config.h"
 #include "OptionModel.h"
@@ -28,7 +28,7 @@ class QNetworkReply;
 
 namespace Ui
 {
-class Page_NetInst;
+class Page_Options;
 }  // namespace Ui
 
 class OptionsPage : public QWidget
@@ -49,7 +49,7 @@ public:
 
 private:
     Config* m_config;
-    Ui::Page_NetInst* ui;
+    Ui::Page_Options* ui;
 };
 
-#endif  // NETINSTALLPAGE_H
+#endif  // OPTIONSPAGE_H
