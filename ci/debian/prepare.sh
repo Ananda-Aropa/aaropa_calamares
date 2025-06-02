@@ -54,7 +54,7 @@ cd ../..
 
 dh_auto_configure -- \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DINSTALL_CONFIG=ON \
+	-DINSTALL_CONFIG=OFF \
 	-DKDE_INSTALL_USE_QT_SYS_PATHS=ON \
 	-DSKIP_MODULES="$_skip_modules" \
 	-DWEBVIEW_FORCE_WEBKIT=1 \

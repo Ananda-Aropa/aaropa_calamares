@@ -56,4 +56,6 @@ fi
 
 sed -i -r 's/efiBootLoader: .+/efiBootLoader: "'"$BOOTLOADER"'"/g' /usr/share/calamares/modules/bootloader.conf
 
+export BOOTLOADER
+
 calamares "$@"

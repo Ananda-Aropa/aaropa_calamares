@@ -47,17 +47,6 @@ sys_prefix = "/usr/share"
 calamares_shared = sys_prefix + "/calamares"
 scriptdir = calamares_shared + "/scripts"
 
-def is_bootloader(name):
-    """
-    Check if bootloader is specified.
-    """
-    return libcalamares.utils.target_env_call([
-        "/usr/bin/grep",
-        "-q",
-        'efiBootLoader: "{}"'.format(name),
-        calamares_shared + "/modules/bootloader.conf"
-    ]) == 0
-
 def run():
     """
     Pre-config before installing bootloader
@@ -80,9 +69,8 @@ def run():
     options = libcalamares.globalstorage.value("options")
     cmdline = (open("/cdrom/cmdline.txt", "r").readline() + " " + options).replace('\n', ' ')
 
-    bl_conf = calamares_shared + "/modules/bootloader.conf"
-    if is_bootloader("grub"):
-        bootloader = "grub"
+    bootloader = os.environ.get("BOOTLOADER", "grub").lower()
+    if bootloader == "grub":
         grubDir = os.path.join(root_mount_point, "boot/grub")
         mkdir_p(grubDir)
 
@@ -96,8 +84,7 @@ def run():
             print("MODE=normal", file=envCfg)
 
         command = [scriptdir + "/grubcfg"]
-    elif is_bootloader("refind"):
-        bootloader = "refind"
+    elif bootloader == "refind":
         command = [
             scriptdir + "/refind-conf",
             root_mount_point,
@@ -111,18 +98,6 @@ def run():
             root_mount_point,
             cmdline,
         ]
-
-    # # Replace bootloader name inside `bootloader` module configuration
-    # libcalamares.utils.host_env_process_output(
-    #     [
-    #         "sed",
-    #         "-i",
-    #         "-r",
-    #         's/efiBootLoader: .+/efiBootLoader: "{}"/g'.format(bootloader),
-    #         calamares_shared + "/modules/bootloader.conf",
-    #     ],
-    #     None,
-    # )
 
     with open(os.path.abspath("/etc/default/grub"), "a") as grubConf:
         print("GRUB_TIMEOUT=10", file=grubConf)

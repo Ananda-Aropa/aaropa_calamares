@@ -48,17 +48,6 @@ sys_prefix = "/usr/share"
 calamares_shared = sys_prefix + "/calamares"
 scriptdir = calamares_shared + "/scripts"
 
-def is_bootloader(name):
-    """
-    Check if bootloader is specified.
-    """
-    return libcalamares.utils.target_env_call([
-        "/usr/bin/grep",
-        "-q",
-        'efiBootLoader: "{}"'.format(name),
-        calamares_shared + "/modules/bootloader.conf"
-    ]) == 0
-
 def run():
     """
     Post-config after installing bootloader
@@ -91,21 +80,14 @@ def run():
             continue
         filesystems.append(partition["fs"])
 
-    options = libcalamares.globalstorage.value("options")
-    cmdline = (open("/cdrom/cmdline.txt", "r").readline() + " " + options).replace('\n', ' ')
-
-    if is_bootloader("grub"):
-        bootloader = "grub"
-        command = ["echo", "Skipping"]
-    elif is_bootloader("refind"):
-        bootloader = "refind"
+    bootloader = os.environ.get("BOOTLOADER", "grub").lower()
+    if bootloader == "refind":
         command = [
             scriptdir + "/refind-postconf",
             root_mount_point,
             " ".join(filesystems),
         ]
     else:
-        libcalamares.utils.warning("Unsupported bootloader: {}".format(bootloader))
         bootloader = "none"
         command = ["echo", "Skipping"]
 
