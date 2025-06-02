@@ -1,4 +1,4 @@
-Source: blissos-calamares
+Source: aaropa-calamares
 Section: unknown
 Priority: optional
 Maintainer: Bùi Gia Viện <shadichy@blisslabs.org>
@@ -54,11 +54,11 @@ Build-Depends: debhelper-compat (= 13),
   qt6-webengine-dev-tools,
   qt6-webengine-private-dev
 Standards-Version: 4.6.2
-Homepage: https://github.com/shadichy/patches-calamares-blissos.git
-Vcs-Browser: https://github.com/shadichy/patches-calamares-blissos.git
-Vcs-Git: https://github.com/shadichy/patches-calamares-blissos.git
+Homepage: https://github.com/BlissOS/aaropa_calamares.git
+Vcs-Browser: https://github.com/BlissOS/aaropa_calamares.git
+Vcs-Git: https://github.com/BlissOS/aaropa_calamares.git
 
-Package: blissos-calamares
+Package: aaropa-calamares
 Architecture: linux-any
 Multi-Arch: foreign
 Depends: os-prober,

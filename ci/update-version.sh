@@ -10,6 +10,6 @@ upstream_version=$(wget -O /dev/null "$UPSTREAM/releases/latest" 2>&1 | grep "$U
 upstream_version=${upstream_version##*/}
 upstream_version=${upstream_version#v}
 
-sed -i -r "s/blissos-calamares \([0-9]+(\.[0-9]+)+/blissos-calamares ($upstream_version/g" debian/changelog
+sed -i -r "s/aaropa-calamares \([0-9]+(\.[0-9]+)+/aaropa-calamares ($upstream_version/g" debian/changelog
 
 find . -type f -exec sed -i "s/$current_ver/$upstream_version/g" {} +

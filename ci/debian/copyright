@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Source: https://github.com/shadichy/patches-calamares-blissos.git
-Upstream-Name: blissos-calamares
+Source: https://github.com/BlissOS/aaropa_calamares.git
+Upstream-Name: aaropa-calamares
 Upstream-Contact:
 
 Files:
