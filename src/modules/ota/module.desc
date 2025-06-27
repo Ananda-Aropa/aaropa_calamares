@@ -3,7 +3,7 @@
 # Syntax is YAML 1.2
 ---
 type:       "job"
-name:       "make-ab"
+name:       "ota"
 interface:  "python"
 script:     "main.py"
 weight:     12

@@ -259,7 +259,7 @@
 #     - name: "Manual configurations"
 #       description: "androidboot.bootctrl_bootcfg="
 #       editable: true
-#       default: "/ab.env.cfg"
+#       default: "/boot/ab.env.cfg"
 
 - name: "Recovery"
   options:

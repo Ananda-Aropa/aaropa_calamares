@@ -1,0 +1,7 @@
+#!/usr/bin/bash
+
+[ "$2" ] || exit 1
+source=$1
+target=$2
+
+dd if="$source" of="$target" conv=notrunc

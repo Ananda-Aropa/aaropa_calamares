@@ -14,7 +14,7 @@ done
 . "/usr/share/grub/grub-mkconfig_lib"
 . /etc/default/grub
 
-cat <<EOF >"${ROOT}/${androidboot_bootctrl__bootcfg:="ab.env.cfg"}"
+cat <<EOF >"${ROOT}/${androidboot_bootctrl__bootcfg:="boot/ab.env.cfg"}"
 cmdline="
 	androidboot.slot_suffix=_a
 	androidboot.mode=normal
