@@ -68,6 +68,8 @@ Depends: os-prober,
   qml6-module-qtquick-layouts,
   ${shlibs:Depends},
   ${misc:Depends},
+Provides: calamares
+Conflicts: calamares
 Description: distribution-independent installer framework
   Calamares is a distribution-independent installer framework.
   .
