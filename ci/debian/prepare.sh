@@ -17,11 +17,12 @@ _modules="
 	gen-img
 	hostinfo
 	interactiveterminal
+	oemid
 	options
+	ota
 	make-ab
 	mount
 	notesqml
-	oemid
 	partition
 	preservefiles
 	rawfs
@@ -53,7 +54,7 @@ done
 cd ../..
 
 dh_auto_configure -- \
-	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_BUILD_TYPE=Debug \
 	-DINSTALL_CONFIG=OFF \
 	-DKDE_INSTALL_USE_QT_SYS_PATHS=ON \
 	-DSKIP_MODULES="$_skip_modules" \
