@@ -54,7 +54,11 @@ if ! arg_bootloader "$1"; then
 	esac
 fi
 
-sed -i -r 's/efiBootLoader: .+/efiBootLoader: "'"$BOOTLOADER"'"/g' /usr/share/calamares/modules/bootloader.conf
+for path in /usr/share /etc; do
+	conf=$path/calamares/modules/bootloader.conf
+	[ -f $conf ] &&
+		sed -i -r 's/efiBootLoader: .+/efiBootLoader: "'"$BOOTLOADER"'"/g' $conf
+done
 
 export BOOTLOADER
 
