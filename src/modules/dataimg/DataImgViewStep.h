@@ -12,6 +12,9 @@
 
 #include "Config.h"
 
+#include "GlobalStorage.h"
+#include "JobQueue.h"
+
 #include "DllMacro.h"
 #include "utils/PluginFactory.h"
 #include "viewpages/ViewStep.h"
@@ -52,6 +55,7 @@ public slots:
     void nextIsReady();
 
 private:
+    void navigate( Calamares::GlobalStorage& globalStorage ) const;
     Config m_config;
 
     DataImgPage* m_widget;

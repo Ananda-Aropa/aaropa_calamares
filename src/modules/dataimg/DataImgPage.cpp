@@ -19,6 +19,7 @@ DataImgPage::DataImgPage( Config* c, QWidget* parent )
     , m_config( c )
     , ui( new Ui::Page_DataImg )
 {
+    ui->setupUi( this );
     connect( c,
              &Config::titleLabelChanged,
              [ ui = this->ui ]( const QString title )
@@ -35,37 +36,54 @@ DataImgPage::DataImgPage( Config* c, QWidget* parent )
              } );
 
     ui->checkBoxMaximum->setChecked( c->useMaximum() );
-    ui->spinBoxDataSize->setValue( c->dataSize() / c->sizeValueRatio() );
     ui->spinBoxDataSize->setMaximum( c->maximumDataSize() );
+    ui->spinBoxDataSize->setValue( c->useMaximum() ? 0 : c->dataSize() / c->unitRatio( c->unit() ) );
+
+    ui->spinBoxDataSize->setEnabled( !c->useMaximum() );
+    ui->comboBoxUnit->setEnabled( !c->useMaximum() );
 
     ui->comboBoxUnit->clear();
-    for ( const QString& unitName : c->unitNames() )
+    const auto& names = c->unitNames();
+    for ( const auto& pair : names.table )
     {
-        ui->comboBoxUnit->addItem( unitName );
+        ui->comboBoxUnit->addItem( pair.first );
     }
-    ui->comboBoxUnit->setCurrentText( c->unitNames().at( c->unit() ) );
+    ui->comboBoxUnit->setCurrentIndex( c->unit() );
 
-    connect( ui->checkBoxMaximum, &QCheckBox::toggled, this, [ c ]( bool checked ) { c->setUseMaximum( checked ); } );
+    connect( ui->checkBoxMaximum,
+             &QCheckBox::toggled,
+             [ ui = this->ui, c ]( bool checked )
+             {
+                 if ( checked )
+                 {
+                     ui->spinBoxDataSize->setValue( 0 );
+                 }
+                 else
+                 {
+                     ui->spinBoxDataSize->setValue( c->dataSize() / c->unitRatio( c->unit() ) );
+                 }
+
+                 ui->spinBoxDataSize->setEnabled( !checked );
+                 ui->comboBoxUnit->setEnabled( !checked );
+
+                 c->setUseMaximum( checked );
+             } );
 
     connect( ui->spinBoxDataSize,
              &QSpinBox::valueChanged,
-             this,
-             [ c ]( int value ) { c->setDataSize( value * c->sizeValueRatio() ); } );
+             [ c ]( int value ) { c->setDataSize( value * c->unitRatio( c->unit() ) ); } );
     connect( ui->comboBoxUnit,
              &QComboBox::currentTextChanged,
-             this,
-             [ c ]( const QString& text )
+             [ ui = this->ui, c ]( const QString& text )
              {
-                 if ( text == "MiB" )
+                 bool ok = false;
+                 auto it = c->unitNames().find( text, ok );
+                 if ( ok )
                  {
-                     c->setUnit( Config::MiB );
-                 }
-                 else if ( text == "GiB" )
-                 {
-                     c->setUnit( Config::GiB );
+                     c->setUnit( it );
+                     ui->spinBoxDataSize->setValue( c->dataSize() / c->unitRatio( it ) );
                  }
              } );
 }
 
 DataImgPage::~DataImgPage() {}
-

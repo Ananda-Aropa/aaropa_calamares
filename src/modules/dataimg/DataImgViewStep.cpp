@@ -13,6 +13,7 @@
 
 #include "GlobalStorage.h"
 #include "JobQueue.h"
+#include "ViewManager.h"
 
 #include "utils/Logger.h"
 #include "utils/QtCompat.h"
@@ -32,7 +33,6 @@ DataImgViewStep::DataImgViewStep( QObject* parent )
     connect( &m_config, &Config::statusReady, this, &DataImgViewStep::nextIsReady );
 }
 
-
 DataImgViewStep::~DataImgViewStep()
 {
     if ( m_widget && m_widget->parent() == nullptr )
@@ -41,11 +41,28 @@ DataImgViewStep::~DataImgViewStep()
     }
 }
 
+void
+DataImgViewStep::navigate( Calamares::GlobalStorage& globalStorage ) const
+{
+    Calamares::ViewManager* viewInstance = Calamares::ViewManager::instance();
+
+    if ( globalStorage.contains( "_dataimg_visited" ) )
+    {
+        globalStorage.remove( "_dataimg_visited" );
+        viewInstance->back();
+    }
+    else
+    {
+        globalStorage.insert( "_dataimg_visited", true );
+        viewInstance->next();
+    }
+}
 
 QString
 DataImgViewStep::prettyName() const
 {
-    return m_config.titleLabel();
+    // return m_config.titleLabel();
+    return QString( "Data image" );
 }
 
 
@@ -94,7 +111,6 @@ DataImgViewStep::jobs() const
 void
 DataImgViewStep::onActivate()
 {
-    // from GS, if partition step has /data mountpoint, skip
     auto* gs = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
     if ( gs && gs->contains( "partitions" ) )
     {
@@ -105,29 +121,31 @@ DataImgViewStep::onActivate()
             if ( partitionData.value( "mountPoint" ).toString() == "/data" )
             {
                 cDebug() << "Skipping DataImgViewStep because /data mountpoint is already set in partition step.";
-                return;
+                navigate( *gs );
             }
-            // set upper limit as size of / -10GiB
-            // if ( partitionData.value( "mountPoint" ).toString() == "/" )
-            // {
-            // 		unsigned int size = partitionData.value( "size" ).toInt();
-            // 		if ( size > 10 * 1024 * 1024 )  // 10 GiB
-            // 		{
-            // 				m_config.setMaximumDataSize( size - 10 * 1024 * 1024 );  // Set maximum size to / size - 10 GiB
-            // 				cDebug() << "Setting maximum data size to" << m_config.maximumDataSize() << "bytes.";
-            // 		}
-            // 		else
-            // 		{
-            // 				cWarning() << "Partition size is too small for /data, skipping DataImgViewStep.";
-            // 				return;
-            // 		}
-            // }
         }
     }
-    QMessageBox mb( QMessageBox::Warning, m_config.titleLabel(), m_config.noticeLabel(), QMessageBox::Yes, m_widget );
-    mb.addButton( QMessageBox::No );
-    Calamares::fixButtonLabels( &mb );
-    mb.exec();
+    else if ( !gs || !gs->contains( "dataimg" ) )
+    {
+        QMessageBox mb(
+            QMessageBox::Warning, m_config.titleLabel(), m_config.noticeLabel(), QMessageBox::Yes, m_widget );
+        mb.addButton( QMessageBox::No );
+        connect( &mb,
+                 &QMessageBox::rejected,
+                 this,
+                 [ this ]
+                 {
+                     auto* gs
+                         = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
+                     if ( gs )
+                     {
+                         navigate( *gs );
+                     }
+                 } );
+
+        Calamares::fixButtonLabels( &mb );
+        mb.exec();
+    }
 }
 
 void

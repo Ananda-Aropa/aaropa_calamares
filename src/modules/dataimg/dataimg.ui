@@ -1,44 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-	<author>
-		SPDX-FileCopyrightText: 2025 Bùi Gia Viện &lt;shadichy@blisslabs.org&gt;
-		SPDX-License-Identifier: GPL-3.0-or-later
-	</author>
-	<class>Page_DataImg</class>
-	<widget class="QWidget" name="Page_DataImg">
-		<property name="geometry">
-			<rect>
-				<x>0</x>
-				<y>0</y>
-				<width>997</width>
-				<height>474</height>
-			</rect>
-		</property>
-		<property name="windowTitle">
-			<string />
-		</property>
-		<layout class="QVBoxLayout" name="verticalLayout_2">
-			<item>
-				<widget class="QLabel" name="label">
-				</widget>
-			</item>
-			<item>
-				<widget class="QCheckBox" name="checkBoxMaximum">
-				</widget>
-			</item>
-			<item>
-				<widget class="QSpinBox" name="spinBoxDataSize">
-					<property name="minimum">
-						<number>1</number>
-					</property>
-				</widget>
-			</item>
-			<item>
-				<widget class="QComboBox" name="comboBoxUnit">
-				</widget>
-			</item>
-		</layout>
-	</widget>
-	<resources />
-	<connections />
+ <author>
+  SPDX-FileCopyrightText: 2025 Bùi Gia Viện &lt;shadichy@blisslabs.org&gt;
+  SPDX-License-Identifier: GPL-3.0-or-later
+ </author>
+ <class>Page_DataImg</class>
+ <widget class="QWidget" name="Page_DataImg">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>997</width>
+    <height>474</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string />
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="alignment">
+      <set>Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkBoxMaximum">
+    </widget>
+   </item>
+   <item>
+    <widget class="QSpinBox" name="spinBoxDataSize">
+     <property name="alignment">
+      <set>Qt::AlignTop</set>
+     </property>
+     <property name="minimum">
+      <number>1</number>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="comboBoxUnit">
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>1</height>
+			</size>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizePolicy">
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources />
+ <connections />
 </ui>

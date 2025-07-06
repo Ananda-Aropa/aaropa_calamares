@@ -13,6 +13,7 @@
 #include "JobQueue.h"
 #include "compat/Variant.h"
 #include "utils/Logger.h"
+#include "utils/NamedEnum.h"
 #include "utils/Retranslator.h"
 #include "utils/Variant.h"
 
@@ -56,24 +57,35 @@ Config::loadingDone()
     emit statusReady();
 }
 
-void
-Config::setUnitNames()
+
+const NamedEnumTable< Config::Unit >&
+Config::unitNames()
 {
-    m_unitNames.clear();
-    for ( Unit unit : m_units )
+    static const NamedEnumTable< Config::Unit > names { { QStringLiteral( "MiB" ), Config::Unit::MiB },
+                                                        { QStringLiteral( "GiB" ), Config::Unit::GiB } };
+
+    return names;
+}
+
+int
+Config::unitRatio( Config::Unit unit ) const
+{
+    if ( unit == Config::Unit::GiB )
     {
-        m_unitNames << ( unit == MiB ? "MiB" : "GiB" );
+        return 1024;
     }
+    else if ( unit == Config::Unit::MiB )
+    {
+        return 1;
+    }
+    return 0;
 }
 
 void
-Config::setUnit( Unit unit )
+Config::setUnit( Config::Unit unit )
 {
-    if ( m_units.contains( unit ) )
-    {
-        m_unit = unit;
-        m_dataSize /= sizeValueRatio();
-    }
+    m_unit = unit;
+    m_dataSize /= unitRatio( m_unit );
 }
 
 void
@@ -101,7 +113,6 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
     {
         m_checkboxLabel = new Calamares::Locale::TranslatedString( label, "checkbox", className );
     }
-    setUnitNames();
 }
 
 void
@@ -112,7 +123,7 @@ Config::finalizeGlobalStorage()
     {
         QVariantMap m;
         m.insert( "useMaximum", m_useMaximum );
-        m.insert( "dataSize", m_dataSize * sizeValueRatio() );
+        m.insert( "dataSize", m_dataSize * unitRatio( m_unit ) );
         gs->insert( "dataimg", m );
     }
 }

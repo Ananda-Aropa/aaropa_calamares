@@ -38,33 +38,33 @@ public:
 
     QString titleLabel() const;
     QString checkboxLabel() const;
-		QString noticeLabel() const;
-		
+    QString noticeLabel() const;
+
     enum Unit
     {
         MiB,
         GiB,
     };
     Q_ENUM( Unit )
-    using UnitsSet = QSet< Unit >;
 
-    const UnitsSet& Units() const { return m_units; }
-		QStringList unitNames() const { return m_unitNames; }
-		void setUnitNames();
+    // using UnitsSet = QSet< Unit >;
+
+    /// @brief Lookup table for the enums
+    const NamedEnumTable< Unit >& unitNames();
+
+    int unitRatio( Unit unit ) const;
 
     Unit unit() const { return m_unit; }
     void setUnit( Unit unit );
 
-    unsigned int sizeValueRatio() const { return m_unit == GiB ? 1024 : 1; }
-
     bool useMaximum() const { return m_useMaximum; }
     void setUseMaximum( bool useMaximum );
 
-    unsigned int dataSize() const { return m_dataSize; }
-    void setDataSize( unsigned int size ) { m_dataSize = size; }
+    int dataSize() const { return m_dataSize; }
+    void setDataSize( int size ) { m_dataSize = size; }
 
-		unsigned int maximumDataSize() const { return m_maximumDataSize; }
-		void setMaximumDataSize( unsigned int size ) { m_maximumDataSize = size; }
+    int maximumDataSize() const { return m_maximumDataSize; }
+    void setMaximumDataSize( int size ) { m_maximumDataSize = size; }
 
     /** @brief Write the selected option lists to global storage
      *
@@ -77,7 +77,7 @@ Q_SIGNALS:
     // void statusChanged( QString status );  ///< Something changed
     void titleLabelChanged( QString label );
     void checkboxLabelChanged( QString label );
-		void noticeLabelChanged( QString label ); 
+    void noticeLabelChanged( QString label );
     void statusReady();  ///< Loading groups is complete
 
 private Q_SLOTS:
@@ -87,17 +87,14 @@ private Q_SLOTS:
 private:
     Calamares::Locale::TranslatedString* m_titleLabel = nullptr;
     Calamares::Locale::TranslatedString* m_checkboxLabel = nullptr;
-		Calamares::Locale::TranslatedString* m_noticeLabel = nullptr;
-
-    UnitsSet m_units;
-		QStringList m_unitNames;
+    Calamares::Locale::TranslatedString* m_noticeLabel = nullptr;
 
     bool m_useMaximum = true;
 
-    unsigned int m_dataSize = 0;
-		unsigned int m_maximumDataSize = -1;
-    
-		Unit m_unit = MiB;
+    int m_dataSize = 0;
+    int m_maximumDataSize = (unsigned int)( -1 ) >> 1;
+
+    Unit m_unit = Unit::MiB;
 };
 
 #endif
