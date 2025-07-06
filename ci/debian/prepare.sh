@@ -28,7 +28,6 @@ _modules="
 	rawfs
 	summary
 	umount
-	unpackfs
 	welcome
 	welcomeq
 	"
