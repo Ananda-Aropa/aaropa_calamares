@@ -16,7 +16,6 @@ override_dh_auto_install:
 	dh_auto_install -- || :
 	rm -rf debian/aaropa-calamares/usr/include debian/aaropa-calamares/usr/lib/*/cmake
 	cp -r src/scripts debian/aaropa-calamares/usr/share/calamares
-	cp -r src/modules/options/options.yaml debian/aaropa-calamares/usr/share/calamares/modules
 	cp -r wrapper/bin/aaropa-calamares debian/aaropa-calamares/usr/bin
 
 # Some test don't work well, we don't need to run them at package build time.
