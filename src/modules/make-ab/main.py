@@ -76,16 +76,6 @@ def run():
     for entry in libcalamares.job.configuration["make-ab"]:
         file = os.path.join(root_mount_point, entry["file"])
         size = entry["size"]
-
-        if not os.path.exists(file):
-            libcalamares.utils.warning(
-                'The source filesystem "{}" does not exist'.format(file)
-            )
-            return (
-                _("Bad make-ab configuration"),
-                _('The source file "{}" does not exist').format(file),
-            )
-
         turn_ab(file, size)
 
     return None
