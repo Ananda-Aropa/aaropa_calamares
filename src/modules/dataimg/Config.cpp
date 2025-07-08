@@ -121,7 +121,7 @@ Config::finalizeGlobalStorage()
     auto* gs = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
     if ( gs )
     {
-        QVariantMap m;
+        QVariantMap m = gs->value( "dataimg" ).toMap();
         m.insert( "useMaximum", m_useMaximum );
         m.insert( "dataSize", m_dataSize * unitRatio( m_unit ) );
         gs->insert( "dataimg", m );

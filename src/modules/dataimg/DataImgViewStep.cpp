@@ -44,8 +44,14 @@ DataImgViewStep::~DataImgViewStep()
 void
 DataImgViewStep::navigate( Calamares::GlobalStorage& globalStorage ) const
 {
-    Calamares::ViewManager* viewInstance = Calamares::ViewManager::instance();
+    if ( globalStorage.contains( "dataimg" ) )
+    {
+        QVariantMap m = globalStorage.value( "dataimg" ).toMap();
+        m.insert( "disabled", true );
+        globalStorage.insert( "dataimg", m );
+    }
 
+    Calamares::ViewManager* viewInstance = Calamares::ViewManager::instance();
     if ( globalStorage.contains( "_dataimg_visited" ) )
     {
         globalStorage.remove( "_dataimg_visited" );
@@ -62,7 +68,7 @@ QString
 DataImgViewStep::prettyName() const
 {
     // return m_config.titleLabel();
-    return QString( "Data image" );
+    return tr( "Data image" );
 }
 
 
@@ -112,6 +118,10 @@ void
 DataImgViewStep::onActivate()
 {
     auto* gs = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
+    if ( gs )
+    {
+        gs->insert( "dataimg", QVariantMap() );
+    }
     if ( gs && gs->contains( "partitions" ) )
     {
         QVariantList partitions = gs->value( "partitions" ).toList();
@@ -125,7 +135,7 @@ DataImgViewStep::onActivate()
             }
         }
     }
-    else if ( !gs || !gs->contains( "dataimg" ) )
+    else if ( !gs || gs->value( "dataimg" ).toMap().value( "disabled" ).toBool() )
     {
         QMessageBox mb(
             QMessageBox::Warning, m_config.titleLabel(), m_config.noticeLabel(), QMessageBox::Yes, m_widget );

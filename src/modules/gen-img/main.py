@@ -56,13 +56,14 @@ def run():
         )
 
     data_img = libcalamares.globalstorage.value("dataimg")
+    data_img_enabled = not bool(data_img["disabled"])
 
     libcalamares.utils.host_env_process_output(
         [
             "/usr/share/calamares/scripts/gen-img",
             root_mount_point,
-            not not data_img,
-            [data_img["dataSize"], 0][(not not data_img["useMaximum"])] if data_img else "",
+            data_img_enabled,
+            [data_img["dataSize"], 0][bool(data_img["useMaximum"])] if data_img_enabled else "",
         ],
         None,
     )
