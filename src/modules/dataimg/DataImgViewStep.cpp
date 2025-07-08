@@ -44,13 +44,6 @@ DataImgViewStep::~DataImgViewStep()
 void
 DataImgViewStep::navigate( Calamares::GlobalStorage& globalStorage ) const
 {
-    if ( globalStorage.contains( "dataimg" ) )
-    {
-        QVariantMap m = globalStorage.value( "dataimg" ).toMap();
-        m.insert( "disabled", true );
-        globalStorage.insert( "dataimg", m );
-    }
-
     Calamares::ViewManager* viewInstance = Calamares::ViewManager::instance();
     if ( globalStorage.contains( "_dataimg_visited" ) )
     {
@@ -120,41 +113,62 @@ DataImgViewStep::onActivate()
     auto* gs = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
     if ( gs )
     {
-        gs->insert( "dataimg", QVariantMap() );
-    }
-    if ( gs && gs->contains( "partitions" ) )
-    {
-        QVariantList partitions = gs->value( "partitions" ).toList();
-        for ( const QVariant& partition : partitions )
+        QVariantMap m;
+        if ( gs->contains( "dataimg" ) )
         {
-            QVariantMap partitionData = partition.toMap();
-            if ( partitionData.value( "mountPoint" ).toString() == "/data" )
+            m = gs->value( "dataimg" ).toMap();
+        }
+        else
+        {
+            m.insert( "disabled", true );
+            gs->insert( "dataimg", m );
+        }
+
+        if ( gs->contains( "partitions" ) )
+        {
+            QVariantList partitions = gs->value( "partitions" ).toList();
+            for ( const QVariant& partition : partitions )
             {
-                cDebug() << "Skipping DataImgViewStep because /data mountpoint is already set in partition step.";
-                navigate( *gs );
+                QVariantMap partitionData = partition.toMap();
+                if ( partitionData.value( "mountPoint" ).toString() == "/data" )
+                {
+                    cDebug() << "Skipping DataImgViewStep because /data mountpoint is already set in partition step.";
+                    navigate( *gs );
+                }
             }
         }
-    }
-    else if ( !gs || gs->value( "dataimg" ).toMap().value( "disabled" ).toBool() )
-    {
-        QMessageBox mb(
-            QMessageBox::Warning, m_config.titleLabel(), m_config.noticeLabel(), QMessageBox::Yes, m_widget );
-        mb.addButton( QMessageBox::No );
-        connect( &mb,
-                 &QMessageBox::rejected,
-                 this,
-                 [ this ]
-                 {
-                     auto* gs
-                         = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
-                     if ( gs )
+        else if ( m.value( "disabled" ).toBool() )
+        {
+            QMessageBox mb( QMessageBox::Warning,
+                            m_config.titleLabel(),
+                            m_config.noticeLabel(),
+                            { QMessageBox::Yes, QMessageBox::No },
+                            m_widget );
+            connect( &mb,
+                     &QMessageBox::finished,
+                     this,
+                     [ this ]( int result )
                      {
-                         navigate( *gs );
-                     }
-                 } );
+                         auto* gs = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage()
+                                                                    : nullptr;
+                         if ( gs )
+                         {
+                             if ( result == QMessageBox::No )
+                             {
+                                 navigate( *gs );
+                             }
+                             else
+                             {
+                                 QVariantMap m = gs->value( "dataimg" ).toMap();
+                                 m.insert( "disabled", false );
+                                 gs->insert( "dataimg", m );
+                             }
+                         }
+                     } );
 
-        Calamares::fixButtonLabels( &mb );
-        mb.exec();
+            Calamares::fixButtonLabels( &mb );
+            mb.exec();
+        }
     }
 }
 
