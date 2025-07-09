@@ -111,65 +111,52 @@ void
 DataImgViewStep::onActivate()
 {
     auto* gs = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
-    if ( gs )
+    if ( gs && gs->contains( "partitions" ) )
     {
-        QVariantMap m;
-        if ( gs->contains( "dataimg" ) )
+        QVariantList partitions = gs->value( "partitions" ).toList();
+        for ( const QVariant& partition : partitions )
         {
-            m = gs->value( "dataimg" ).toMap();
-        }
-        else
-        {
-            m.insert( "disabled", true );
-            gs->insert( "dataimg", m );
-        }
-
-        if ( gs->contains( "partitions" ) )
-        {
-            QVariantList partitions = gs->value( "partitions" ).toList();
-            for ( const QVariant& partition : partitions )
+            QVariantMap partitionData = partition.toMap();
+            if ( partitionData.value( "mountPoint" ).toString() == "/data" )
             {
-                QVariantMap partitionData = partition.toMap();
-                if ( partitionData.value( "mountPoint" ).toString() == "/data" )
-                {
-                    cDebug() << "Skipping DataImgViewStep because /data mountpoint is already set in partition step.";
-                    navigate( *gs );
-                }
+                cDebug() << "Skipping DataImgViewStep because /data mountpoint is already set in partition step.";
+                navigate( *gs );
             }
         }
-        else if ( m.value( "disabled" ).toBool() )
-        {
-            QMessageBox mb( QMessageBox::Warning,
-                            m_config.titleLabel(),
-                            m_config.noticeLabel(),
-                            { QMessageBox::Yes, QMessageBox::No },
-                            m_widget );
-            connect( &mb,
-                     &QMessageBox::finished,
-                     this,
-                     [ this ]( int result )
-                     {
-                         auto* gs = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage()
-                                                                    : nullptr;
-                         if ( gs )
-                         {
-                             if ( result == QMessageBox::No )
-                             {
-                                 navigate( *gs );
-                             }
-                             else
-                             {
-                                 QVariantMap m = gs->value( "dataimg" ).toMap();
-                                 m.insert( "disabled", false );
-                                 gs->insert( "dataimg", m );
-                             }
-                         }
-                     } );
-
-            Calamares::fixButtonLabels( &mb );
-            mb.exec();
-        }
     }
+
+    QMessageBox mb( QMessageBox::Warning,
+                    m_config.titleLabel(),
+                    m_config.noticeLabel(),
+                    { QMessageBox::Yes, QMessageBox::No },
+                    m_widget );
+    connect( &mb,
+             &QMessageBox::finished,
+             this,
+             [ this ]( int result )
+             {
+                 auto* gs
+                     = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
+                 if ( gs )
+                 {
+                     QVariantMap m;
+                     if ( gs->contains( "dataimg" ) )
+                     {
+                         m = gs->value( "dataimg" ).toMap();
+                     }
+
+                     m.insert( "disabled", result == QMessageBox::No );
+                     gs->insert( "dataimg", m );
+
+                     if ( result == QMessageBox::No )
+                     {
+                         navigate( *gs );
+                     }
+                 }
+             } );
+
+    Calamares::fixButtonLabels( &mb );
+    mb.exec();
 }
 
 void
