@@ -7,9 +7,10 @@ mkdir -p "$1"/{data,boot}
 if [ "$2" = "True" ] || ! mkdir "$1"/DATA; then
 	rm -rf "$1"/data
 
+	max_size=$(($(busybox df -m "$1" | awk '{print $4}' | tail -1) - 4096))
 	size=$3
-	if [ "$size" = 0 ]; then
-		size=$(($(busybox df -m "$1" | awk '{print $4}' | tail -1) - 4096))
+	if [ "$size" = 0 ] || [ "$size" -gt "$max_size" ]; then
+		size=$max_size
 	fi
 
 	dd if=/dev/zero of="$1"/data.img bs=1 count=0 \
