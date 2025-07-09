@@ -29,6 +29,8 @@
     <widget class="QLabel" name="warn">
      <property name="alignment">
       <set>Qt::AlignCenter</set>
+     </property>
+     <property name="font">
       <font>
        <bold>true</bold>
       </font>
