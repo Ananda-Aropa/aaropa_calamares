@@ -78,7 +78,9 @@ def run():
         stdout=subprocess.PIPE,
     ).stdout.decode()
 
-    kernel_args = str(libcalamares.globalstorage.value("options"))
+
+    data_img = libcalamares.globalstorage.value("dataimg")
+    data_img_enabled = not bool(data_img["disabled"])
 
     with open(os.path.join(root_mount_point, "fstab.android"), "w") as fstab_file:
         print(FSTAB_HEADER, file=fstab_file)
@@ -88,7 +90,7 @@ def run():
             print("$FS/boot bootloader", file=fstab_file)
 
         if not re.search("/data\\s", genfstab_output):
-            if "DATA=data.img" in kernel_args or os.path.exists(os.path.join(root_mount_point, "data.img")):
+            if data_img_enabled or os.path.exists(os.path.join(root_mount_point, "data.img")):
                 print("$FS/data.img userdata ext4 defaults defaults", file=fstab_file)
             else:
                 print("$FS/data userdata", file=fstab_file)
