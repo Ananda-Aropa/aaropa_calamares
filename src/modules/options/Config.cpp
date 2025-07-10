@@ -142,9 +142,22 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
     }
 
     // Lastly, load the groups data
+    m_queue = new LoaderQueue( this );
+
+    // There are 2 sources: config file and globalStorage
+    auto* gs = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
+    if ( gs && gs->contains( "presets" ) )
+    {
+        QVariantMap presets = gs->value( "presets" ).toMap();
+        const QString url = presets.value( "selection" ).toString();
+        if ( !url.isEmpty() )
+        {
+            m_queue->append( SourceItem { QUrl { url }, QVariantList() } );
+        }
+    }
+
     const QString key = QStringLiteral( "groupsUrl" );
     const auto& groupsUrlVariant = configurationMap.value( key );
-    m_queue = new LoaderQueue( this );
     if ( Calamares::typeOf( groupsUrlVariant ) == Calamares::StringVariantType )
     {
         m_queue->append( SourceItem::makeSourceItem( groupsUrlVariant.toString(), configurationMap ) );
