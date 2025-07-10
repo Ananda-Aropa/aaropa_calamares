@@ -2,6 +2,14 @@
      SPDX-License-Identifier: CC0-1.0
 -->
 
+# FORK MAINTAINER
+This is a fork of the original calamares project.
+We (BlissLabs) use Calamares as our bootstrapper for our BlissOS builds.
+
+Active maintainers:
+ * Bùi Gia Viện (BlissLabs) <shadichy@blisslabs.org>
+ * hmtheboy154 <buingoc67@gmail.com>
+
 # MAINTAINER
 
 Calamares maintainers through the years:
@@ -37,6 +45,7 @@ and moral support from (alphabetically by first name or nickname):
  - Bill Auger
  - Bob van der Linden
  - Boria138
+ - Bùi Gia Viện
  - Brian Morison
  - Caio Jordão Carvalho
  - Camilo Higuita
@@ -64,6 +73,7 @@ and moral support from (alphabetically by first name or nickname):
  - GeckoLinux
  - Harald Sitter
  - Hector Martin
+ - hmtheboy154
  - Huang Jia Wen
  - huxingyi
  - Ivan Borzenkov

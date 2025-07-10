@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: 2025 Bùi Gia Viện (BlissLabs) <shadichy@blisslabs.org>
+# SPDX-License-Identifier: GPL-3.0-or-later
+---
+$schema: https://json-schema.org/schema#
+$id: https://calamares.io/schemas/presets
+additionalProperties: false
+type: object
+properties:
+    label:
+        type: object
+        additionalProperties: true
+        properties:
+            notice: { type: string }
+            title: { type: string }
+            checkbox: { type: string }

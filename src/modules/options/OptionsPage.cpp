@@ -4,6 +4,7 @@
  *   SPDX-FileCopyrightText: 2017 Kyle Robbertze  <krobbertze@gmail.com>
  *   SPDX-FileCopyrightText: 2017-2018 2020, Adriaan de Groot <groot@kde.org>
  *   SPDX-FileCopyrightText: 2017 Gabriel Craciunescu <crazy@frugalware.org>
+ *   SPDX-FileCopyrightText: 2025 Bùi Gia Viện (BlissLabs) <shadichy@blisslabs.org>
  *   SPDX-License-Identifier: GPL-3.0-or-later
  *
  *   Calamares is Free Software: see the License-Identifier above.
@@ -48,6 +49,7 @@ OptionsPage::OptionsPage( Config* c, QWidget* parent )
              {
                  ui->warn->setVisible( !subtitle.isEmpty() );
                  ui->warn->setText( subtitle );
+                 ui->warn->setStyleSheet( "font-weight: bold;" );
              } );
     connect( c, &Config::statusReady, this, &OptionsPage::expandGroups );
 }

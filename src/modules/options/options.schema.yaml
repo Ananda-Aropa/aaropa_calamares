@@ -1,4 +1,5 @@
 # SPDX-FileCopyrightText: 2020 Adriaan de Groot <groot@kde.org>
+# SPDX-FileCopyrightText: 2025 Bùi Gia Viện (BlissLabs) <shadichy@blisslabs.org>
 # SPDX-FileContributor: benne-dee ( worked on groups schema )
 # SPDX-License-Identifier: GPL-3.0-or-later
 ---
@@ -69,6 +70,7 @@ oneOf:
               properties:
                   sidebar: { type: string }
                   title: { type: string }
+                  subtitle: { type: string }
           groups: { $ref: "#/definitions/groups" }
       required: [groupsUrl]
 

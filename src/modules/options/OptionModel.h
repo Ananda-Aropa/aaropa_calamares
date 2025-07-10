@@ -3,14 +3,15 @@
  *   SPDX-FileCopyrightText: 2017 Kyle Robbertze <kyle@aims.ac.za>
  *   SPDX-FileCopyrightText: 2017 Adriaan de Groot <groot@kde.org>
  *   SPDX-FileCopyrightText: 2023 Vladislav Nepogodin <nepogodin.vlad@gmail.com>
+ *   SPDX-FileCopyrightText: 2025 Bùi Gia Viện (BlissLabs) <shadichy@blisslabs.org>
  *   SPDX-License-Identifier: GPL-3.0-or-later
  *
  *   Calamares is Free Software: see the License-Identifier above.
  *
  */
 
-#ifndef PACKAGEMODEL_H
-#define PACKAGEMODEL_H
+#ifndef OPTIONMODEL_H
+#define OPTIONMODEL_H
 
 #include "OptionTreeItem.h"
 
@@ -99,4 +100,4 @@ private:
     OptionTreeItem* m_rootItem = nullptr;
 };
 
-#endif  // PACKAGEMODEL_H
+#endif  // OPTIONMODEL_H
