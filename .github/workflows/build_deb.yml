@@ -1,0 +1,132 @@
+name: Generate .deb (ceres)
+
+on:
+  push:
+    branches:
+      - '*'
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - devel
+  workflow_dispatch:
+
+env:
+  REPO: ${{ github.repository }}
+  REF: ${{ github.ref }}
+  REVISION: ${{ github.run_number }}
+  AUTHOR: ${{ secrets.RELEASE_USERNAME }}
+  PAT: ${{ secrets.RELEASE_TOKEN }}
+  QUEUE: Ananda-Aropa/aaropa_debian_queue
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Enqueue
+        if: always()
+        env:
+          REPO: ${{ env.REPO }}
+          GITHUB_USER: ${{ env.AUTHOR }}
+          GITHUB_TOKEN: ${{ env.PAT }}
+          QUEUE: ${{ env.QUEUE }}
+          REF: ${{ env.REF }}
+        run: |
+          BRANCH=${REF##*/}
+          git clone -b $BRANCH https://github.com/$QUEUE queue
+          cd queue
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          touch ${REPO##*/}
+          git add ${REPO##*/}
+          git commit -m "Enqueue ${REPO}"
+          git remote set-url --push origin https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/$QUEUE
+          git push origin $BRANCH
+          cd ..
+          rm -rf queue
+
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up source files
+        run: ./ci/setup.sh
+
+      - name: Build DEB package
+        uses: Ananda-Aropa/build-deb@main
+        with:
+          distro: debian:unstable-slim
+          arch: amd64
+          docker_arch_specific: true
+
+      - name: Extract artifact
+        run: unzip -o built-deb-files.zip
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: |
+            metadata.yml
+            *_*_*.buildinfo
+            *_*_*.changes
+            *_*_*.deb
+            *_*_*.udeb
+
+      - name: Dequeue
+        if: always()
+        env:
+          REPO: ${{ env.REPO }}
+          GITHUB_USER: ${{ env.AUTHOR }}
+          GITHUB_TOKEN: ${{ env.PAT }}
+          QUEUE: ${{ env.QUEUE }}
+          REF: ${{ env.REF }}
+        run: |
+          BRANCH=${REF##*/}
+          git clone -b $BRANCH https://github.com/$QUEUE queue
+          cd queue
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          rm -rf ${REPO##*/}
+          git add .
+          git commit -m "Dequeue ${REPO}"
+          git remote set-url --push origin https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/$QUEUE
+          git push origin $BRANCH
+          cd ..
+          rm -rf queue
+
+  release:
+    name: Release
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Download artifacts
+        id: download-artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: out
+          pattern: "*"
+          merge-multiple: true
+
+      - name: List Files
+        run: ls -R ${{ steps.download-artifacts.outputs.download-path }}
+
+      - name: Setup variables
+        run: |
+          pwd=$(pwd)
+          cd ${{ steps.download-artifacts.outputs.download-path }}
+          echo "VERSION=$(ls *.changes | head -1 | cut -d '_' -f 2 | cut -d '-' -f 1)" >>"$GITHUB_ENV"
+          echo "DATE=$(date -u +'%Y%m%d')" >>"$GITHUB_ENV"
+          cd $pwd
+
+      - uses: "softprops/action-gh-release@v2.1.0"
+        with:
+          token: "${{ secrets.RELEASE_TOKEN }}"
+          prerelease: false
+          tag_name: "${{ env.VERSION }}-${{ env.REVISION }}"
+          name: "Release ${{ env.VERSION }}-${{ env.REVISION }}-${{ env.DATE }}"
+          files: |
+            ${{ steps.download-artifacts.outputs.download-path }}/*
