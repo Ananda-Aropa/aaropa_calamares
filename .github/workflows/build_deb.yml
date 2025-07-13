@@ -1,6 +1,8 @@
 name: Generate .deb (ceres)
 
 on:
+  schedule:
+    - cron: "0 0 15 * *"
   push:
     branches:
       - '*'
