@@ -123,7 +123,7 @@ Config::finalizeGlobalStorage()
     {
         QVariantMap m = gs->value( "dataimg" ).toMap();
         m.insert( "useMaximum", m_useMaximum );
-        m.insert( "dataSize", m_dataSize * unitRatio( m_unit ) );
+        m.insert( "dataSize", m_dataSize );
         gs->insert( "dataimg", m );
     }
 }
