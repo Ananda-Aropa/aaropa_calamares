@@ -71,6 +71,13 @@ def run():
 
     bootloader = os.environ.get("BOOTLOADER", "grub").lower()
     if bootloader == "grub":
+        if libcalamares.job.configuration.get("grub_bootcfg", None) is None:
+            libcalamares.utils.warning("No *grub_bootcfg* key in job configuration.")
+            return (
+                _("Bad grub_bootcfg configuration"),
+                _("There is no configuration information."),
+            )
+
         grubDir = os.path.join(root_mount_point, "boot/grub")
         mkdir_p(grubDir)
 
@@ -83,10 +90,19 @@ def run():
             print("CMDLINE='" + cmdline + "'", file=envCfg)
             print("MODE=normal", file=envCfg)
 
-        command = [scriptdir + "/grubcfg"]
-    elif bootloader == "refind":
         command = [
-            scriptdir + "/refind-conf",
+            scriptdir + "/grubcfg",
+            libcalamares.job.configuration["grub_bootcfg"]
+        ]
+    elif bootloader == "refind":
+        if libcalamares.job.configuration.get("refind_bootcfg", None) is None:
+            libcalamares.utils.warning("No *refind_bootcfg* key in job configuration.")
+            return (
+                _("Bad refind_bootcfg configuration"),
+                _("There is no configuration information."),
+            )
+        command = [
+            libcalamares.job.configuration["refind_bootcfg"],
             root_mount_point,
             cmdline,
         ]
@@ -99,6 +115,12 @@ def run():
             cmdline,
         ]
 
+    # Backup /etc/default/grub
+    libcalamares.utils.host_env_process_output(
+        ["cp", "-a", "/etc/default/grub", "/etc/default/grub.bak"], None
+    )
+
+    # Write new /etc/default/grub
     with open(os.path.abspath("/etc/default/grub"), "a") as grubConf:
         print("GRUB_TIMEOUT=10", file=grubConf)
         print("GRUB_TIMEOUT_STYLE=menu", file=grubConf)

@@ -81,7 +81,19 @@ def run():
         filesystems.append(partition["fs"])
 
     bootloader = os.environ.get("BOOTLOADER", "grub").lower()
-    if bootloader == "refind":
+    if bootloader == "grub":
+        # Restore original /etc/default/grub
+        os.remove("/etc/default/grub")
+        os.rename("/etc/default/grub.bak", "/etc/default/grub")
+
+        # Restore original /etc/grub.d/10_linux
+        os.remove("/etc/grub.d/10_linux")
+        os.rename("/etc/grub.d/10_linux.bak", "/etc/grub.d/10_linux")
+
+        command = [
+            "echo", "Restored original GRUB configuration.",
+        ]
+    elif bootloader == "refind":
         command = [
             scriptdir + "/refind-postconf",
             root_mount_point,
@@ -89,7 +101,7 @@ def run():
         ]
     else:
         bootloader = "none"
-        command = ["echo", "Skipping"]
+        command = ["echo", "Skipping..."]
 
 
     libcalamares.utils.host_env_process_output(command, None)

@@ -1,7 +1,12 @@
 #!/bin/bash
 
-# Move config to its right path
-cp /usr/share/calamares/scripts/10_blissos /etc/grub.d/10_linux
+CONF_NEW=$1
+
+# Backup /etc/grub.d/10_linux
+mv /etc/grub.d/10_linux /etc/grub.d/10_linux.bak
+
+# Replace /etc/grub.d/10_linux with user defined configuration
+cp "$CONF_NEW" /etc/grub.d/10_linux
 
 # Patch grub-mkconfig
 # shellcheck disable=SC2016
