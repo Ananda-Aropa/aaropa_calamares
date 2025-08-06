@@ -117,7 +117,7 @@ DataImgViewStep::onActivate()
         for ( const QVariant& partition : partitions )
         {
             QVariantMap partitionData = partition.toMap();
-            if ( partitionData.value( "mountPoint" ).toString() == "/data" )
+            if ( partitionData.value( "mountPoint" ).toString().compare( "/data", Qt::CaseInsensitive ) == 0 )
             {
                 cDebug() << "Skipping DataImgViewStep because /data mountpoint is already set in partition step.";
                 navigate( *gs );
