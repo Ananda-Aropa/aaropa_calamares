@@ -6,6 +6,8 @@ shopt -s extglob
 #!/hint/bash
 # SPDX-License-Identifier: GPL-2.0-only
 
+USE_CDROM_MOUNTPOINT=false
+
 # generated from util-linux source: libmount/src/utils.c
 declare -A pseudofs_types=([anon_inodefs]=1
                            [apparmorfs]=1
@@ -382,6 +384,16 @@ fi
 
 # handle block devices
 while read -r src target fstype opts fsroot; do
+	if [[ $target = / ]]; then
+		# Skip / or mount it to /cdrom if requested
+		if [[ "$USE_CDROM_MOUNTPOINT" = true ]]; then
+			target=/cdrom
+		else
+			continue
+		fi
+	fi
+
+	# skip pseudofs if requested
   if (( !pseudofs )) && fstype_is_pseudofs "$fstype"; then
     continue
   fi
