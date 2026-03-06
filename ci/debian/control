@@ -1,86 +1,67 @@
 Source: aaropa-calamares
-Section: unknown
+Section: utils
 Priority: optional
 Maintainer: Bùi Gia Viện <shadichy@blisslabs.org>
 Rules-Requires-Root: no
-Build-Depends: debhelper-compat (= 13),
-  cmake,
+Build-Depends: cmake,
   cryptsetup <!nocheck>,
+  debhelper-compat (= 13),
   extra-cmake-modules,
   gettext,
+  libcrypt-dev,
   libkf6config-dev,
-  libkf6config-dev-bin,
-  libkf6configwidgets-dev,
   libkf6coreaddons-dev,
   libkf6crash-dev,
   libkf6i18n-dev,
   libkf6iconthemes-dev,
   libkf6kio-dev,
-  libkf6notifyconfig-dev,
-  libkf6package-dev,
   libkf6parts-dev,
   libkf6service-dev,
   libkf6solid-dev,
   libkpmcore-dev,
   libparted-dev,
+  libpolkit-qt6-1-dev,
   libpwquality-dev,
   libboost-python-dev,
+  libqt6svg6-dev,
   libyaml-cpp-dev,
   os-prober <!nocheck>,
-  pkg-config,
+  pkgconf,
   pkg-kde-tools,
   pkexec,
-  python3,
+  python3:any,
   qml6-module-qtquick-layouts,
   qml6-module-qtquick-window,
   qml6-module-qtquick,
-  libpolkit-qt6-1-dev,
-  qt6-base-dev,
-  qt6-base-dev-tools,
-  qt6-base-private-dev,
-  qt6-declarative-dev,
-  qt6-declarative-dev-tools,
-  qt6-declarative-private-dev,
-  qt6-quick3d-dev-tools,
-  qt6-quick3dphysics-dev-tools,
-  qt6-shadertools-dev,
-  qt6-svg-dev,
-  qt6-svg-private-dev,
-  qt6-tools-dev,
-  qt6-tools-dev-tools,
-  qt6-tools-private-dev,
-  qt6-wayland-dev-tools,
-  qt6-webengine-dev,
-  qt6-webengine-dev-tools,
-  qt6-webengine-private-dev
-Standards-Version: 4.6.2
-Homepage: https://github.com/BlissOS/aaropa_calamares.git
-Vcs-Browser: https://github.com/BlissOS/aaropa_calamares.git
-Vcs-Git: https://github.com/BlissOS/aaropa_calamares.git
+  qt6-base-dev
+Standards-Version: 4.7.3
+Homepage: https://github.com/Ananda-Aropa/aaropa_calamares.git
+Vcs-Browser: https://github.com/Ananda-Aropa/aaropa_calamares.git
+Vcs-Git: https://github.com/Ananda-Aropa/aaropa_calamares.git
 
 Package: aaropa-calamares
 Architecture: linux-any
 Multi-Arch: foreign
 Depends: os-prober,
-  rsync,
-  qml6-module-qtquick,
   qml6-module-qtquick-controls,
   qml6-module-qtquick-layouts,
   ${shlibs:Depends},
   ${misc:Depends},
 Provides: calamares
 Conflicts: calamares
+Replaces: calamares, calamares-extensions (<< 3.3.12-1)
+Breaks: calamares, calamares-extensions (<<3.3.12-1)
 Description: distribution-independent installer framework
-  Calamares is a distribution-independent installer framework.
-  .
-  This is the re-branded version of calamares, made specifically
-  for BlissOS live installer.
-  .
-  It provides a graphical installer that can be used with nearly
-  any distribution. This package is suitable for live media on
-  Debian-based systems, and won't be of any particular use on
-  an already installed system.
-  .
-  You will likely want to provide your own config files to match
-  your distribution, reading the Calamares documentation will guide
-  you through that process.
+ Calamares is a distribution-independent installer framework.
+ .
+ This is the re-branded version of calamares, made specifically
+ for BlissOS live installer.
+ .
+ It provides a graphical installer that can be used with nearly
+ any distribution. This package is suitable for live media on
+ Debian-based systems, and won't be of any particular use on
+ an already installed system.
+ .
+ You will likely want to provide your own config files to match
+ your distribution, reading the Calamares documentation will guide
+ you through that process.
