@@ -330,6 +330,7 @@ target_to_mntpt() {
 	boot) ret=bootloader ;;
 	boot/efi) ret=esp ;;
 	data) ret=userdata ;;
+  '') ret=cdrom ;;
 	*) ret=$1 ;;
 	esac
   printf "%s" "$ret"
