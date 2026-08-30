@@ -40,11 +40,15 @@ fi
 if ! arg_bootloader "$1"; then
 	if command -v zenity >/dev/null 2>&1; then
 		if [ "$EFI_SIZE" = none ]; then
-			CHOICE=$(zenity --list --title="Calamares" --text="Specify bootloader to continue" --column="Bootloader" "GRUB" "None")
+			CHOICE=$(zenity --list --radiolist --title="Calamares" --text="Specify bootloader to continue" \
+				--column="Selection" --column="Bootloader" \
+				TRUE "GRUB" FALSE "None")
 		else
-			CHOICE=$(zenity --list --title="Calamares" --text="Specify bootloader to continue" --column="Bootloader" "GRUB" "rEFInd" "None")
+			CHOICE=$(zenity --list --radiolist --title="Calamares" --text="Specify bootloader to continue" \
+				--column="Selection" --column="Bootloader" \
+				TRUE "GRUB" FALSE "rEFInd" FALSE "None")
 		fi
-		
+
 		case "$CHOICE" in
 			"GRUB") BOOTLOADER=grub ;;
 			"rEFInd") BOOTLOADER=refind ;;
