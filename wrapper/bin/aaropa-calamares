@@ -38,20 +38,50 @@ else
 fi
 
 if ! arg_bootloader "$1"; then
-	if [ "$EFI_SIZE" = none ]; then
-		BUTTONS='GRUB:3,None:5'
+	if command -v zenity >/dev/null 2>&1; then
+		if [ "$EFI_SIZE" = none ]; then
+			CHOICE=$(zenity --list --radiolist --title="Calamares" --text="Specify bootloader to continue" \
+				--column="Selection" --column="Bootloader" \
+				TRUE "GRUB" FALSE "None")
+		else
+			CHOICE=$(zenity --list --radiolist --title="Calamares" --text="Specify bootloader to continue" \
+				--column="Selection" --column="Bootloader" \
+				TRUE "GRUB" FALSE "rEFInd" FALSE "None")
+		fi
+
+		case "$CHOICE" in
+			"GRUB") BOOTLOADER=grub ;;
+			"rEFInd") BOOTLOADER=refind ;;
+			"None") BOOTLOADER=none ;;
+			*) exit 1 ;;
+		esac
+
+	elif command -v gxmessage >/dev/null 2>&1 || command -v xmessage >/dev/null 2>&1; then
+		if command -v gxmessage >/dev/null 2>&1; then
+			MSG_CMD="gxmessage"
+		else
+			MSG_CMD="xmessage"
+		fi
+
+		if [ "$EFI_SIZE" = none ]; then
+			BUTTONS='GRUB:3,None:5'
+		else
+			BUTTONS='GRUB:3,rEFInd:4,None:5'
+		fi
+
+		$MSG_CMD -center -buttons "$BUTTONS" -name "Calamares" "Specify bootloader to continue"
+
+		case "$?" in
+		3) BOOTLOADER=grub ;;
+		4) BOOTLOADER=refind ;;
+		5) BOOTLOADER=none ;;
+		*) exit 1 ;;
+		esac
+
 	else
-		BUTTONS='GRUB:3,rEFInd:4,None:5'
+		echo "ERROR: No graphical dialog tool found (zenity, gxmessage, or xmessage)."
+		exit 1
 	fi
-
-	gxmessage -center -buttons "$BUTTONS" -name "Calamares" "Specify bootloader to continue"
-
-	case "$?" in
-	3) BOOTLOADER=grub ;;
-	4) BOOTLOADER=refind ;;
-	5) BOOTLOADER=none ;;
-	*) exit 1 ;;
-	esac
 fi
 
 for path in /usr/share /etc; do
