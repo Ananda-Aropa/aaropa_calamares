@@ -1,9 +1,12 @@
 #!/bin/bash
 # Bootloader behaviour for machines that also start Windows or another Linux, and for
 # upgrades of an existing Bass OS install (existinginstall page):
-#  - reuse the existing EFI directory id (gs bassEfiBootloaderId) instead of a new one,
-#    and look for ${SERIAL} id clashes in the target ESP's EFI/ directory;
+#  - reuse the existing EFI directory id (gs bassEfiBootloaderId, else on upgrade the
+#    directory whose loader embeds the root UUID) instead of a new one, and look for
+#    ${SERIAL} id clashes in the target ESP's EFI/ directory;
 #  - upgrade: grub-install --no-nvram, keep the boot order, only add a missing entry at the end;
+#  - upgrade: every other loader of the install gets the new GRUB core (old core + new
+#    modules fails with "symbol ... not found");
 #  - BIOS upgrade: keep the existing MBR boot code;
 #  - BIOS fresh install: keep another system's MBR when the user declined to replace it
 #    (gs bassAllowMbrReplace == false) and leave a GRUB entry to add to that loader;
@@ -28,6 +31,8 @@ sub('''    if "efiBootloaderId" in libcalamares.job.configuration:
         efi_bootloader_id = change_efi_suffix(efi_directory, libcalamares.job.configuration["efiBootloaderId"])
 ''', '''    if libcalamares.globalstorage.value("bassEfiBootloaderId"):
         efi_bootloader_id = libcalamares.globalstorage.value("bassEfiBootloaderId")
+    elif bass_upgrade() and bass_find_efi_id(efi_directory):
+        efi_bootloader_id = bass_find_efi_id(efi_directory)
     elif "efiBootloaderId" in libcalamares.job.configuration:
         efi_bootloader_id = change_efi_suffix(bass_efi_firmware_dir(efi_directory),
                                               libcalamares.job.configuration["efiBootloaderId"])
@@ -51,6 +56,7 @@ sub('''                                   "--efi-directory=" + installation_root
                                    "--bootloader-id=" + efi_bootloader_id,
                                    "--force"] + bass_grub_efi_extra_args())
             bass_ensure_efi_entry(efi_directory, efi_bootloader_id, efi_grub_file)
+            bass_refresh_stale_loaders(efi_directory, efi_bootloader_id, efi_grub_file)
 ''')
 
 sub('''        if libcalamares.job.configuration.get(fallback, True):
@@ -80,6 +86,68 @@ def bass_efi_firmware_dir(efi_directory):
 def bass_upgrade():
     upgrade = libcalamares.globalstorage.value("bassUpgrade") or {}
     return bool(upgrade.get("enabled", False))
+
+
+def bass_root_uuid():
+    for partition in libcalamares.globalstorage.value("partitions") or []:
+        if partition.get("mountPoint") == "/" and partition.get("uuid"):
+            return partition["uuid"]
+    return (libcalamares.globalstorage.value("bassUpgrade") or {}).get("uuid", "")
+
+
+def bass_loaders_for_root(efi_firmware_dir, uuid):
+    """
+    (EFI dir name, path) of every loader on the ESP built for the root filesystem
+    @p uuid: grub-install embeds "search.fs_uuid <uuid>" in the core image.
+    """
+    found = []
+    if not uuid or not os.path.isdir(efi_firmware_dir):
+        return found
+    needle = uuid.casefold().encode()
+    for name in sorted(os.listdir(efi_firmware_dir)):
+        sub_dir = os.path.join(efi_firmware_dir, name)
+        if not os.path.isdir(sub_dir):
+            continue
+        for f in sorted(os.listdir(sub_dir)):
+            path = os.path.join(sub_dir, f)
+            if not f.casefold().endswith(".efi") or not os.path.isfile(path):
+                continue
+            try:
+                with open(path, "rb") as fh:
+                    if needle in fh.read().lower():
+                        found.append((name, path))
+            except OSError:
+                pass
+    return found
+
+
+def bass_find_efi_id(efi_directory):
+    """ Upgrade without a known EFI id: the directory whose loader starts this root. """
+    for name, _ in bass_loaders_for_root(bass_efi_firmware_dir(efi_directory), bass_root_uuid()):
+        if name.casefold() != "boot":
+            return name
+    return None
+
+
+def bass_refresh_stale_loaders(efi_directory, label, grub_file):
+    """
+    Upgrade: other loaders of this install (an older EFI id, the EFI/Boot copy) still hold
+    the old GRUB core, which fails on the new modules in /boot/grub
+    ("symbol ... not found"). Give them the new core.
+    """
+    if not bass_upgrade():
+        return
+    efi_firmware_dir = bass_efi_firmware_dir(efi_directory)
+    new_loader = os.path.join(vfat_correct_case(efi_firmware_dir, label), grub_file)
+    digest = bass_file_digest(new_loader)
+    if not digest:
+        libcalamares.utils.warning("No new loader at " + new_loader)
+        return
+    for _, path in bass_loaders_for_root(efi_firmware_dir, bass_root_uuid()):
+        if path == new_loader or bass_file_digest(path) == digest:
+            continue
+        libcalamares.utils.debug("Replacing the stale loader " + path)
+        shutil.copy2(new_loader, path)
 
 
 def bass_file_digest(path):
