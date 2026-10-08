@@ -54,6 +54,30 @@ $FS/misc.img							misc
 """
 
 
+def userdata_is_image(root, data_img_enabled):
+    """
+    Must agree with scripts/gen-img, which ran before this job: a kept data/ directory
+    wins over a stale data.img when the previous fstab.android mounted the directory.
+    """
+    data_dir = os.path.join(root, "data")
+    has_img = os.path.isfile(os.path.join(root, "data.img"))
+    has_dir = os.path.isdir(data_dir) and len(os.listdir(data_dir)) > 0
+    prev_dir = False
+    try:
+        with open(os.path.join(root, "fstab.android")) as old:
+            prev_dir = any(re.match(r"\$FS/data\s+userdata", line) for line in old)
+    except OSError:
+        pass
+
+    if has_img and has_dir and prev_dir:
+        return False
+    if has_img:
+        return True
+    if has_dir:
+        return False
+    return data_img_enabled
+
+
 def run():
     """
     Create fstab.android file
@@ -79,8 +103,9 @@ def run():
     ).stdout.decode()
 
 
-    data_img = libcalamares.globalstorage.value("dataimg")
-    data_img_enabled = not bool(data_img["disabled"])
+    data_img = libcalamares.globalstorage.value("dataimg") or {}
+    data_img_enabled = not bool(data_img.get("disabled", True))
+    use_data_img = userdata_is_image(root_mount_point, data_img_enabled)
 
     with open(os.path.join(root_mount_point, "fstab.android"), "w") as fstab_file:
         print(FSTAB_HEADER, file=fstab_file)
@@ -90,7 +115,7 @@ def run():
             print("$FS/boot bootloader", file=fstab_file)
 
         if not re.search("/data\\s", genfstab_output):
-            if data_img_enabled or os.path.exists(os.path.join(root_mount_point, "data.img")):
+            if use_data_img:
                 print("$FS/data.img userdata ext4 defaults defaults", file=fstab_file)
             else:
                 print("$FS/data userdata", file=fstab_file)

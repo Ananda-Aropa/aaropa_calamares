@@ -55,15 +55,25 @@ def run():
             _('rootMountPoint is "{}", which does not exist.'.format(root_mount_point)),
         )
 
-    data_img = libcalamares.globalstorage.value("dataimg")
-    data_img_enabled = not bool(data_img["disabled"])
+    data_img = libcalamares.globalstorage.value("dataimg") or {}
+    data_img_enabled = not bool(data_img.get("disabled", True))
+
+    # Existing data/ or data.img on the target is kept unless the user asked to erase it
+    # (existinginstall page, Fresh install + erase). See /usr/share/calamares/scripts/gen-img.
+    upgrade = libcalamares.globalstorage.value("bassUpgrade") or {}
+    wipe = bool(upgrade.get("wipeData", False)) and not bool(upgrade.get("enabled", False))
+
+    size = ""
+    if data_img_enabled:
+        size = 0 if bool(data_img.get("useMaximum", True)) else data_img.get("dataSize", 0)
 
     libcalamares.utils.host_env_process_output(
         [
             "/usr/share/calamares/scripts/gen-img",
             root_mount_point,
-            data_img_enabled,
-            [data_img["dataSize"], 0][bool(data_img["useMaximum"])] if data_img_enabled else "",
+            str(data_img_enabled),
+            str(size),
+            str(wipe),
         ],
         None,
     )

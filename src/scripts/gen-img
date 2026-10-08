@@ -1,6 +1,11 @@
 #!/usr/bin/bash
+# gen-img ROOT DATAIMG_ENABLED SIZE_MIB [WIPE]
+#
+# Creates misc.img and the userdata store (data/ directory or data.img) in ROOT.
+# An existing data.img (ext4) or a non-empty data/ is kept unless WIPE is "True":
+# installing over an existing system without formatting must not lose apps and data.
 
-cd "$1"
+cd "$1" || exit 1
 
 mkdir _test
 if mkdir _TEST; then
@@ -21,12 +26,45 @@ _dd() {
 	dd if=/dev/zero of="$target" $flags
 }
 
+wipe=false
+[ "$4" = "True" ] && wipe=true
+
+has_data_img=false
+if [ -f "$1"/data.img ] && [ "$(blkid -p -s TYPE -o value "$1"/data.img 2>/dev/null)" = ext4 ]; then
+	has_data_img=true
+fi
+has_data_dir=false
+if [ -d "$1"/data ] && [ -n "$(ls -A "$1"/data 2>/dev/null)" ]; then
+	has_data_dir=true
+fi
+# The previous install's fstab says which store was really in use when both exist.
+if $has_data_img && $has_data_dir && $is_linux_fs &&
+	grep -Eq '^\$FS/data[[:space:]]+userdata' "$1"/fstab.android 2>/dev/null; then
+	has_data_img=false
+fi
+
+if $wipe; then
+	echo "gen-img: erasing existing data/ and data.img as requested"
+	rm -rf "$1"/data "$1"/data.img
+	has_data_img=false
+	has_data_dir=false
+fi
+
 _dd "$1"/misc.img 10
 
 mkdir -p "$1"/{data,boot}
 
 if [ "$2" = "True" ] || [ $is_linux_fs = false ]; then
-	rm -rf "$1"/data
+	if $has_data_img; then
+		echo "gen-img: keeping existing data.img"
+		exit 0
+	fi
+	if $has_data_dir && $is_linux_fs; then
+		echo "gen-img: keeping existing data/ directory instead of creating data.img"
+		exit 0
+	fi
+
+	$has_data_dir || rm -rf "$1"/data
 
 	max_size=$(($(busybox df -m "$1" | awk '{print $4}' | tail -1) - 4096))
 	size=$3
@@ -37,4 +75,6 @@ if [ "$2" = "True" ] || [ $is_linux_fs = false ]; then
 	_dd "$1"/data.img "$size"
 
 	mkfs.ext4 -L "userdata" "$1"/data.img
+elif $has_data_img; then
+	echo "gen-img: keeping existing data.img"
 fi
