@@ -1,7 +1,8 @@
 #!/bin/bash
 # Skip the partition page when the existinginstall page (aaropa-calamares-extensions-bass)
 # chose to upgrade an existing Bass OS install: nothing is partitioned or formatted, the
-# existinginstall exec job assigns mount points afterwards.
+# existinginstall exec job assigns mount points afterwards, and the summary page shows
+# the upgrade instead of an empty "Partitions" section.
 
 python3 - src/modules/partition/PartitionViewStep.cpp <<'EOF'
 import sys
@@ -20,15 +21,31 @@ def sub(old, new):
 sub('#include "JobQueue.h"\n',
     '#include "JobQueue.h"\n#include "ViewManager.h"\n#include "jobs/FillGlobalStorageJob.h"\n')
 
-sub('void\nPartitionViewStep::next()\n', '''static bool
+sub('#include <QtConcurrent/QtConcurrent>\n', '''#include <QtConcurrent/QtConcurrent>
+
+static bool
 bassUpgradeSelected()
 {
     auto* gs = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
     return gs && gs->value( "bassUpgrade" ).toMap().value( "enabled" ).toBool();
 }
+''')
 
-void
-PartitionViewStep::next()
+# The existinginstall page describes an upgrade on the summary page.
+sub('PartitionViewStep::prettyStatus() const\n{\n', '''PartitionViewStep::prettyStatus() const
+{
+    if ( bassUpgradeSelected() )
+    {
+        return QString();
+    }
+''')
+
+sub('PartitionViewStep::createSummaryWidget() const\n{\n', '''PartitionViewStep::createSummaryWidget() const
+{
+    if ( bassUpgradeSelected() )
+    {
+        return nullptr;
+    }
 ''')
 
 sub('PartitionViewStep::isAtEnd() const\n{\n', '''PartitionViewStep::isAtEnd() const
