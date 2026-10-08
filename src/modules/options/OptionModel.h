@@ -18,6 +18,7 @@
 #include <functional>
 
 #include <QAbstractItemModel>
+#include <QHash>
 #include <QObject>
 #include <QString>
 
@@ -90,6 +91,19 @@ public:
 
     void setUpdateNextCall( std::function<void(bool)> fn );
 
+    /** @brief Selects exactly the options found in a kernel command line
+     *
+     * Used when upgrading an installed system: an option is selected when all of
+     * its tokens (its description) are in @p tokens; an editable option takes its
+     * input from the token that starts with its description. The defaults are
+     * remembered for resetToDefaults().
+     *
+     * @return the tokens no option matched, in order
+     */
+    QStringList presetFromCmdline( const QStringList& tokens );
+    /// Selection and inputs as loaded, before presetFromCmdline().
+    void resetToDefaults();
+
 private:
     friend class ItemTests;
 
@@ -98,6 +112,13 @@ private:
     std::function<void(bool)> m_nextUpdateCall{};
 
     OptionTreeItem* m_rootItem = nullptr;
+
+    struct SavedState
+    {
+        Qt::CheckState selected;
+        QString input;
+    };
+    QHash< OptionTreeItem*, SavedState > m_defaults;
 };
 
 #endif  // OPTIONMODEL_H

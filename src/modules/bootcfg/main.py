@@ -72,6 +72,9 @@ def kept_cmdline(grub_dir):
     upgrade = libcalamares.globalstorage.value("bassUpgrade") or {}
     if not upgrade.get("enabled") or not upgrade.get("keepBootOptions"):
         return None
+    if libcalamares.globalstorage.value("bassOptionsFromInstall"):
+        # The options page was preset from this command line and may have been edited.
+        return None
     for name in ("android.cfg", "android.cfg.good"):
         cmdline = existing_cmdline(os.path.join(grub_dir, name))
         if cmdline:

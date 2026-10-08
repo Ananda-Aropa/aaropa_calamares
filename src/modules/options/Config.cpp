@@ -23,6 +23,7 @@
 #include "utils/Retranslator.h"
 #include "utils/Variant.h"
 
+#include <QFile>
 #include <QNetworkReply>
 
 Config::Config( QObject* parent )
@@ -113,6 +114,44 @@ Config::loadingDone()
         m_queue = nullptr;
     }
     emit statusReady();
+    applyInstallCmdline();
+}
+
+void
+Config::applyInstallCmdline()
+{
+    auto* gs = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
+    const QVariantMap upgrade = gs ? gs->value( "bassUpgrade" ).toMap() : QVariantMap();
+    const QString cmdline = upgrade.value( "enabled" ).toBool() && upgrade.value( "keepBootOptions" ).toBool()
+        ? upgrade.value( "cmdline" ).toString().simplified()
+        : QString();
+    // Not loaded yet (loadingDone() calls again), or already applied: keep the user's edits.
+    if ( m_model->rowCount() == 0 || cmdline == m_installCmdline )
+    {
+        return;
+    }
+    m_installCmdline = cmdline;
+    m_keptTokens.clear();
+    if ( cmdline.isEmpty() )
+    {
+        m_model->resetToDefaults();
+        return;
+    }
+
+    QStringList defaults;
+    QFile releaseCmdline( QStringLiteral( "/cdrom/cmdline.txt" ) );
+    if ( releaseCmdline.open( QIODevice::ReadOnly ) )
+    {
+        defaults = QString::fromUtf8( releaseCmdline.readAll() ).simplified().split( ' ', Qt::SkipEmptyParts );
+    }
+    for ( const QString& token : m_model->presetFromCmdline( cmdline.split( ' ', Qt::SkipEmptyParts ) ) )
+    {
+        if ( !defaults.contains( token ) )
+        {
+            m_keptTokens.append( token );
+        }
+    }
+    cDebug() << "Options preset from the installed system; kept as is:" << m_keptTokens;
 }
 
 void
@@ -187,5 +226,12 @@ Config::finalizeGlobalStorage()
     {
         outputArguments += option->toOperation() + " ";
     }
-    Calamares::JobQueue::instance()->globalStorage()->insert( "options", outputArguments );
+    for ( const auto& token : std::as_const( m_keptTokens ) )
+    {
+        outputArguments += token + " ";
+    }
+    auto* gs = Calamares::JobQueue::instance()->globalStorage();
+    gs->insert( "options", outputArguments );
+    // bootcfg then uses these options instead of the installed command line.
+    gs->insert( "bassOptionsFromInstall", !m_installCmdline.isEmpty() );
 }

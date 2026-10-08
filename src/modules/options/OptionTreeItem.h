@@ -141,6 +141,8 @@ class OptionTreeItem : public QStandardItem {
   QString toOperation() const;
 
   void setSelected(Qt::CheckState isSelected);
+  /// Sets only this item's state (restoring a saved tree), unlike setSelected().
+  void setSelectedState(Qt::CheckState isSelected) { m_selected = isSelected; }
   void setChildrenSelected(Qt::CheckState isSelected);
   void selectChildren(QString optionName);
 
