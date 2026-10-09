@@ -82,6 +82,15 @@ public:
      */
     void finalizeGlobalStorage();
 
+    /** @brief Pre-select the options of the system being upgraded
+     *
+     * When the existinginstall page chose to upgrade and keep boot options
+     * (gs bassUpgrade.cmdline), the options in that command line are selected;
+     * its other tokens, minus the release defaults in /cdrom/cmdline.txt, are
+     * kept as they are. Otherwise the loaded defaults are restored.
+     */
+    void applyInstallCmdline();
+
 Q_SIGNALS:
     void statusChanged( QString status );  ///< Something changed
     void sidebarLabelChanged( QString label );
@@ -101,6 +110,8 @@ private:
     LoaderQueue* m_queue = nullptr;
     Status m_status = Status::Ok;
     bool m_required = false;
+    QString m_installCmdline;  ///< command line the model was preset from
+    QStringList m_keptTokens;  ///< its tokens no option covers
 };
 
 #endif

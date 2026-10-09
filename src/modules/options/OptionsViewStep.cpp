@@ -121,6 +121,7 @@ OptionsViewStep::jobs() const
 void
 OptionsViewStep::onActivate()
 {
+    m_config.applyInstallCmdline();
     m_widget->onActivate();
 }
 

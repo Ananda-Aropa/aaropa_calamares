@@ -406,10 +406,123 @@ OptionModel::setupModelData( const QVariantList& groupList, OptionTreeItem* pare
     }
 }
 
+static void
+collectItems( OptionTreeItem* item, OptionTreeItem::List& items )
+{
+    for ( int i = 0; i < item->childCount(); i++ )
+    {
+        items.append( item->child( i ) );
+        collectItems( item->child( i ), items );
+    }
+}
+
+QStringList
+OptionModel::presetFromCmdline( const QStringList& tokens )
+{
+    if ( !m_rootItem )
+    {
+        return tokens;
+    }
+    OptionTreeItem::List items;
+    collectItems( m_rootItem, items );
+
+    beginResetModel();
+    if ( m_defaults.isEmpty() )
+    {
+        for ( auto* item : std::as_const( items ) )
+        {
+            m_defaults.insert( item, { item->isSelected(), item->input() } );
+        }
+    }
+    for ( int i = 0; i < m_rootItem->childCount(); i++ )
+    {
+        m_rootItem->child( i )->setSelected( Qt::Unchecked );
+    }
+
+    QVector< bool > used( tokens.count(), false );
+    auto findToken = [ & ]( const QString& want, bool prefix ) -> int
+    {
+        for ( int t = 0; t < tokens.count(); t++ )
+        {
+            if ( !used[ t ] && ( prefix ? tokens[ t ].startsWith( want ) : tokens[ t ] == want ) )
+            {
+                return t;
+            }
+        }
+        return -1;
+    };
+    for ( auto* item : std::as_const( items ) )
+    {
+        const QString description = item->description().trimmed();
+        if ( !item->isOption() || description.isEmpty() )
+        {
+            continue;
+        }
+        if ( item->isEditable() )
+        {
+            const int t = findToken( description, true );
+            if ( t >= 0 )
+            {
+                used[ t ] = true;
+                item->setInput( tokens[ t ].mid( description.length() ) );
+                item->setSelected( Qt::Checked );
+            }
+            continue;
+        }
+        QList< int > found;
+        for ( const QString& part : description.split( QLatin1Char( ' ' ), Qt::SkipEmptyParts ) )
+        {
+            const int t = findToken( part, false );
+            if ( t < 0 || found.contains( t ) )
+            {
+                found.clear();
+                break;
+            }
+            found.append( t );
+        }
+        if ( !found.isEmpty() )
+        {
+            for ( int t : std::as_const( found ) )
+            {
+                used[ t ] = true;
+            }
+            item->setSelected( Qt::Checked );
+        }
+    }
+    endResetModel();
+
+    QStringList rest;
+    for ( int t = 0; t < tokens.count(); t++ )
+    {
+        if ( !used[ t ] )
+        {
+            rest.append( tokens[ t ] );
+        }
+    }
+    return rest;
+}
+
+void
+OptionModel::resetToDefaults()
+{
+    if ( m_defaults.isEmpty() )
+    {
+        return;
+    }
+    beginResetModel();
+    for ( auto it = m_defaults.cbegin(); it != m_defaults.cend(); ++it )
+    {
+        it.key()->setSelectedState( it.value().selected );
+        it.key()->setInput( it.value().input );
+    }
+    endResetModel();
+}
+
 void
 OptionModel::setupModelData( const QVariantList& l )
 {
     beginResetModel();
+    m_defaults.clear();
     delete m_rootItem;
     m_rootItem = new OptionTreeItem();
     setupModelData( l, m_rootItem );
@@ -422,6 +535,7 @@ OptionModel::appendModelData( const QVariantList& groupList )
     if ( m_rootItem )
     {
         beginResetModel();
+        m_defaults.clear();
 
         const QStringList sources = collectSources( groupList );
 

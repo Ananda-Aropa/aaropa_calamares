@@ -52,6 +52,7 @@ OptionsPage::OptionsPage( Config* c, QWidget* parent )
                  ui->warn->setStyleSheet( "font-weight: bold;" );
              } );
     connect( c, &Config::statusReady, this, &OptionsPage::expandGroups );
+    connect( c->model(), &QAbstractItemModel::modelReset, this, &OptionsPage::expandGroups );
 }
 
 OptionsPage::~OptionsPage() {}

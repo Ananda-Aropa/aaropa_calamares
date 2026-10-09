@@ -111,6 +111,13 @@ void
 DataImgViewStep::onActivate()
 {
     auto* gs = Calamares::JobQueue::instance() ? Calamares::JobQueue::instance()->globalStorage() : nullptr;
+    // Upgrading an existing install keeps its data store; the existinginstall page sets "dataimg".
+    if ( gs && gs->value( "bassUpgrade" ).toMap().value( "enabled" ).toBool() )
+    {
+        cDebug() << "Skipping DataImgViewStep because an existing installation is being upgraded.";
+        navigate( *gs );
+        return;
+    }
     if ( gs && gs->contains( "partitions" ) )
     {
         QVariantList partitions = gs->value( "partitions" ).toList();
@@ -121,6 +128,7 @@ DataImgViewStep::onActivate()
             {
                 cDebug() << "Skipping DataImgViewStep because /data mountpoint is already set in partition step.";
                 navigate( *gs );
+                return;
             }
         }
     }

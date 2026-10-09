@@ -11,6 +11,7 @@
 #
 
 import os
+import re
 
 import libcalamares
 
@@ -47,6 +48,41 @@ sys_prefix = "/usr/share"
 calamares_shared = sys_prefix + "/calamares"
 scriptdir = calamares_shared + "/scripts"
 
+CMDLINE_RE = re.compile(r"^CMDLINE='([^'\"$`\\]*)'$")
+
+
+def existing_cmdline(cfg_path):
+    """
+    CMDLINE of an installed android.cfg, or None unless the file is GRUB-safe:
+    exactly one quoted CMDLINE without characters GRUB would expand (same rule as
+    bass_init.sh android.cfg.good and the live USB bass-repair tool).
+    """
+    try:
+        with open(cfg_path, "r") as cfg:
+            lines = [l.rstrip("\n") for l in cfg]
+    except (OSError, UnicodeDecodeError):
+        return None
+    found = [m.group(1) for m in (CMDLINE_RE.match(l) for l in lines) if m]
+    if len(found) != 1 or sum(1 for l in lines if l.startswith("CMDLINE=")) != 1:
+        return None
+    return found[0].strip() or None
+
+
+def kept_cmdline(grub_dir):
+    upgrade = libcalamares.globalstorage.value("bassUpgrade") or {}
+    if not upgrade.get("enabled") or not upgrade.get("keepBootOptions"):
+        return None
+    if libcalamares.globalstorage.value("bassOptionsFromInstall"):
+        # The options page was preset from this command line and may have been edited.
+        return None
+    for name in ("android.cfg", "android.cfg.good"):
+        cmdline = existing_cmdline(os.path.join(grub_dir, name))
+        if cmdline:
+            libcalamares.utils.debug("bootcfg: keeping boot options from " + name)
+            return cmdline
+    libcalamares.utils.warning("bootcfg: no valid existing CMDLINE, using defaults")
+    return None
+
 def run():
     """
     Pre-config before installing bootloader
@@ -66,8 +102,9 @@ def run():
             _('rootMountPoint is "{}", which does not exist.'.format(root_mount_point)),
         )
 
-    options = libcalamares.globalstorage.value("options")
+    options = libcalamares.globalstorage.value("options") or ""
     cmdline = (open("/cdrom/cmdline.txt", "r").readline() + " " + options).replace('\n', ' ')
+    cmdline = kept_cmdline(os.path.join(root_mount_point, "boot/grub")) or cmdline
 
     bootloader = os.environ.get("BOOTLOADER", "grub").lower()
     if bootloader == "grub":
@@ -85,7 +122,14 @@ def run():
             ["cp", "-r", sys_prefix + "/grub/themes/", grubDir], None
         )
 
-        with open(os.path.join(grubDir, "android.cfg"), "w") as envCfg:
+        envCfgPath = os.path.join(grubDir, "android.cfg")
+        if os.path.isfile(envCfgPath):
+            libcalamares.utils.host_env_process_output(
+                ["cp", "-a", envCfgPath, envCfgPath + ".bak"], None
+            )
+
+        # ota installed the new system into slot _a
+        with open(envCfgPath, "w") as envCfg:
             print("SLOT=_a", file=envCfg)
             print("CMDLINE='" + cmdline + "'", file=envCfg)
             print("MODE=normal", file=envCfg)
